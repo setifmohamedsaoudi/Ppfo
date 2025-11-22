@@ -69,42 +69,120 @@ class MathEngine {
     
     for (int n = 0; n < terms; n++) {
       if (n > 0) {
-        factorial *= n;
+        factorial *= n.toDouble();
       }
-      result += (x.pow(n)) / factorial;
+      result += (_pow(x, n)) / factorial;
     }
     
     return result;
   }
   
+  /// حساب متسلسلة تايلور لـ sin(x)
+  double taylorSin(double x, {int terms = 10}) {
+    double result = 0.0;
+    
+    for (int n = 0; n < terms; n++) {
+      double term = _pow(-1, n) * _pow(x, 2 * n + 1) / _factorial(2 * n + 1);
+      result += term;
+    }
+    
+    return result;
+  }
+  
+  /// حساب متسلسلة تايلور لـ cos(x)
+  double taylorCos(double x, {int terms = 10}) {
+    double result = 0.0;
+    
+    for (int n = 0; n < terms; n++) {
+      double term = _pow(-1, n) * _pow(x, 2 * n) / _factorial(2 * n);
+      result += term;
+    }
+    
+    return result;
+  }
+  
+  /// حساب العاملي (Factorial)
+  double _factorial(int n) {
+    double result = 1.0;
+    for (int i = 2; i <= n; i++) {
+      result *= i.toDouble();
+    }
+    return result;
+  }
+  
+  /// دالة الأس (بديل لـ math.pow)
+  double _pow(double base, int exponent) {
+    if (exponent == 0) return 1.0;
+    if (exponent < 0) return 1.0 / _pow(base, -exponent);
+    
+    double result = 1.0;
+    for (int i = 0; i < exponent; i++) {
+      result *= base;
+    }
+    return result;
+  }
+  
+  /// حساب الجذر التربيعي
+  double sqrt(double x) {
+    if (x < 0) throw ArgumentError('لا يمكن حساب جذر عدد سالب');
+    if (x == 0) return 0;
+    
+    double guess = x / 2;
+    for (int i = 0; i < 20; i++) {
+      guess = (guess + x / guess) / 2;
+    }
+    return guess;
+  }
+  
+  /// حساب اللوغاريتم الطبيعي (تقريبي)
+  double ln(double x) {
+    if (x <= 0) throw ArgumentError('اللوغاريتم الطبيعي غير معرف للأعداد غير الموجبة');
+    
+    // استخدام متسلسلة تايلور لـ ln(1+x) عندما |x| < 1
+    if (x > 0.5 && x < 2) {
+      double y = x - 1;
+      double result = 0.0;
+      for (int n = 1; n <= 50; n++) {
+        double term = _pow(-1, n + 1) * _pow(y, n) / n;
+        result += term;
+      }
+      return result;
+    }
+    
+    // للقيم الأخرى، استخدام خاصية ln(a*b) = ln(a) + ln(b)
+    return ln(x / 2) + ln(2);
+  }
+  
   /// حساب دالة زيتا (نسخة مبسطة)
-  double zeta(double s, {int terms = 1000}) {
+  double zeta(double s, {int terms = 100}) {
     if (s <= 1) return double.infinity;
     
     double result = 0.0;
     for (int n = 1; n <= terms; n++) {
-      result += 1.0 / (n.pow(s));
+      result += 1.0 / _pow(n.toDouble(), s.toInt());
     }
     
     return result;
   }
-}
-
-extension IntPower on int {
-  int pow(int exponent) {
-    int result = 1;
-    for (int i = 0; i < exponent; i++) {
-      result *= this;
+  
+  /// حساب عدد فيبوناتشي
+  int fibonacci(int n) {
+    if (n <= 1) return n;
+    
+    int a = 0, b = 1;
+    for (int i = 2; i <= n; i++) {
+      int temp = a + b;
+      a = b;
+      b = temp;
     }
-    return result;
+    return b;
   }
-}
-
-extension DoublePower on double {
-  double pow(int exponent) {
-    double result = 1.0;
-    for (int i = 0; i < exponent; i++) {
-      result *= this;
+  
+  /// حساب العدد التوفيقي (Harmonic Number)
+  double harmonic(int n) {
+    double result = 0.0;
+    for (int i = 1; i <= n; i++) {
+      result += 1.0 / i;
     }
     return result;
   }
