@@ -110,7 +110,7 @@ class MathEngine {
     return result;
   }
   
-  /// دالة الأس (بديل لـ math.pow)
+  /// دالة الأس
   double _pow(double base, int exponent) {
     if (exponent == 0) return 1.0;
     if (exponent < 0) return 1.0 / _pow(base, -exponent);
@@ -119,49 +119,6 @@ class MathEngine {
     for (int i = 0; i < exponent; i++) {
       result *= base;
     }
-    return result;
-  }
-  
-  /// حساب الجذر التربيعي
-  double sqrt(double x) {
-    if (x < 0) throw ArgumentError('لا يمكن حساب جذر عدد سالب');
-    if (x == 0) return 0;
-    
-    double guess = x / 2;
-    for (int i = 0; i < 20; i++) {
-      guess = (guess + x / guess) / 2;
-    }
-    return guess;
-  }
-  
-  /// حساب اللوغاريتم الطبيعي (تقريبي)
-  double ln(double x) {
-    if (x <= 0) throw ArgumentError('اللوغاريتم الطبيعي غير معرف للأعداد غير الموجبة');
-    
-    // استخدام متسلسلة تايلور لـ ln(1+x) عندما |x| < 1
-    if (x > 0.5 && x < 2) {
-      double y = x - 1;
-      double result = 0.0;
-      for (int n = 1; n <= 50; n++) {
-        double term = _pow(-1, n + 1) * _pow(y, n) / n;
-        result += term;
-      }
-      return result;
-    }
-    
-    // للقيم الأخرى، استخدام خاصية ln(a*b) = ln(a) + ln(b)
-    return ln(x / 2) + ln(2);
-  }
-  
-  /// حساب دالة زيتا (نسخة مبسطة)
-  double zeta(double s, {int terms = 100}) {
-    if (s <= 1) return double.infinity;
-    
-    double result = 0.0;
-    for (int n = 1; n <= terms; n++) {
-      result += 1.0 / _pow(n.toDouble(), s.toInt());
-    }
-    
     return result;
   }
   
@@ -178,11 +135,11 @@ class MathEngine {
     return b;
   }
   
-  /// حساب العدد التوفيقي (Harmonic Number)
-  double harmonic(int n) {
+  /// حساب دالة زيتا (نسخة مبسطة)
+  double zeta(double s, {int terms = 100}) {
     double result = 0.0;
-    for (int i = 1; i <= n; i++) {
-      result += 1.0 / i;
+    for (int n = 1; n <= terms; n++) {
+      result += 1.0 / _pow(n.toDouble(), s.toInt());
     }
     return result;
   }
