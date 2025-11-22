@@ -19,61 +19,15 @@ jobs:
         flutter-version: '3.22.0'
         channel: 'stable'
         
-    - name: Show Flutter version
-      run: flutter --version
-      
     - name: Install dependencies
       run: flutter pub get
       
     - name: Build APK (Release)
       run: flutter build apk --release
       
-    - name: Build AppBundle (Release)
-      run: flutter build appbundle --release
-      
-    - name: Show build outputs
-      run: |
-        echo "📦 ملفات البناء:"
-        find build -name "*.apk" -o -name "*.aab" | head -10
-        ls -la build/app/outputs/
-        
-    - name: Upload APK artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: ppfo-android-app
         path: build/app/outputs/flutter-apk/app-release.apk
         retention-days: 30
-        
-    - name: Create GitHub Release
-      if: success() && github.event_name == 'push'
-      uses: softprops/action-gh-release@v1
-      with:
-        files: build/app/outputs/flutter-apk/app-release.apk
-        tag_name: v${{ github.run_number }}
-        name: "PPFO v25.0 Build #${{ github.run_number }}"
-        body: |
-          📱 **PPFO v25.0 - تطبيق الرياضيات المتقدم**
-          
-          🔢 **نظام رياضي متكامل** يحتوي على:
-          - تحليل الأعداد إلى عوامل أولية
-          - متسلسلات تايلور المتقدمة  
-          - دالة زيتا ريـمان
-          - دوال رياضية خاصة
-          - واجهة مستخدم عربية
-          
-          👨‍💻 **المطور**: الدكتور سعودي محمد
-          ⚡ **بُني تلقائياً بتاريخ**: ${{ github.event.head_commit.timestamp }}
-          🔨 **رقم البناء**: ${{ github.run_number }}
-          
-          ### 📥 التحميل:
-          - `app-release.apk`: للتثبيت المباشر على الأجهزة
-          
-          ### 🔢 الميزات الرياضية:
-          ✅ تحليل الأعداد إلى عوامل أولية  
-          ✅ متسلسلات تايلور المتقدمة  
-          ✅ دالة زيتا ريـمان  
-          ✅ دوال رياضية متخصصة  
-          ✅ واجهة مستخدم عربية كاملة  
-          
-          ### 📄 حقوق الملكية:
-          جميع الحقوق محفوظة © 2025 - الدكتور سعودي محمد
