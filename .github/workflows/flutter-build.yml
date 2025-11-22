@@ -3,14 +3,7 @@ name: Build Flutter Android APK
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:  # يسمح بالتشغيل اليدوي
-    inputs:
-      version:
-        description: 'Version number'
-        required: true
-        default: '25.0.0'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,39 +13,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-        
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.22.0'  # إصدار مستقر حديث
+        flutter-version: '3.22.0'
         channel: 'stable'
-        cache: true
-        cache-key: 'flutter-3.22.0'
         
     - name: Show Flutter version
       run: flutter --version
       
     - name: Install dependencies
-      run: |
-        flutter pub get
-        flutter pub run flutter_launcher_icons:main
-        
-    - name: Run tests
-      run: flutter test
+      run: flutter pub get
       
     - name: Build APK (Release)
-      run: |
-        flutter build apk --release --no-tree-shake-icons --target-platform android-arm,android-arm64
-        
+      run: flutter build apk --release
+      
     - name: Build AppBundle (Release)
-      run: |
-        flutter build appbundle --release --no-tree-shake-icons
-        
+      run: flutter build appbundle --release
+      
     - name: Show build outputs
       run: |
         echo "📦 ملفات البناء:"
@@ -62,51 +40,33 @@ jobs:
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ppfo-flutter-apk
+        name: ppfo-android-app
         path: build/app/outputs/flutter-apk/app-release.apk
         retention-days: 30
         
-    - name: Upload AppBundle artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ppfo-app-bundle
-        path: build/app/outputs/bundle/release/app-release.aab
-        retention-days: 30
-        
-    - name: Upload Debug APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ppfo-debug-apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
-        retention-days: 30
-        
     - name: Create GitHub Release
-      if: success() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      if: success() && github.event_name == 'push'
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          build/app/outputs/flutter-apk/app-release.apk
-          build/app/outputs/bundle/release/app-release.aab
-        tag_name: v${{ github.event.inputs.version || github.run_number }}
-        name: "PPFO Flutter v25.0 Build #${{ github.run_number }}"
+        files: build/app/outputs/flutter-apk/app-release.apk
+        tag_name: v${{ github.run_number }}
+        name: "PPFO v25.0 Build #${{ github.run_number }}"
         body: |
-          📱 **PPFO v25.0 - تطبيق الرياضيات المتقدم (Flutter)**
+          📱 **PPFO v25.0 - تطبيق الرياضيات المتقدم**
           
-          🔢 **نظام رياضي متكامل** تم تطويره باستخدام Flutter يحتوي على:
+          🔢 **نظام رياضي متكامل** يحتوي على:
           - تحليل الأعداد إلى عوامل أولية
           - متسلسلات تايلور المتقدمة  
-          - دالة زيتا ريـمان وأصفارها
+          - دالة زيتا ريـمان
           - دوال رياضية خاصة
           - واجهة مستخدم عربية
           
           👨‍💻 **المطور**: الدكتور سعودي محمد
           ⚡ **بُني تلقائياً بتاريخ**: ${{ github.event.head_commit.timestamp }}
           🔨 **رقم البناء**: ${{ github.run_number }}
-          🛠️ **باستخدام**: Flutter 3.22.0
           
           ### 📥 التحميل:
           - `app-release.apk`: للتثبيت المباشر على الأجهزة
-          - `app-release.aab`: لرفع متجر Google Play
           
           ### 🔢 الميزات الرياضية:
           ✅ تحليل الأعداد إلى عوامل أولية  
