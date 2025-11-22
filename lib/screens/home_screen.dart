@@ -11,7 +11,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final MathEngine mathEngine = MathEngine();
   final TextEditingController _numberController = TextEditingController();
-  String _result = 'النتيجة ستظهر هنا...';
+  String _result = 'مرحباً في PPFO v25.0! 🔢\n\nاختر عملية وأدخل عدداً لبدء التحليل الرياضي.';
   bool _isCalculating = false;
   String _selectedOperation = 'factorize';
 
@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     
     setState(() {
       _isCalculating = true;
-      _result = 'جاري الحساب...';
+      _result = 'جاري الحساب... ⏳';
     });
 
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -31,57 +31,67 @@ class _HomeScreenState extends State<HomeScreen> {
         switch (_selectedOperation) {
           case 'factorize':
             final number = int.tryParse(input) ?? 0;
-            final factors = mathEngine.factorize(number);
-            final isPrime = mathEngine.isPrime(number);
-            result = '''
-🔢 العدد: $number
-${isPrime ? '✅ أولي' : '🔸 مركب'}
+            if (number < 2) {
+              result = '❌ الرجاء إدخال عدد أكبر من 1';
+            } else {
+              final factors = mathEngine.factorize(number);
+              final isPrime = mathEngine.isPrime(number);
+              result = '''
+🔢 **العدد:** $number
+${isPrime ? '✅ **عدد أولي**' : '🔸 **عدد مركب**'}
 
-📊 العوامل الأولية: $factors
+📊 **العوامل الأولية:** $factors
 
-🧮 التحليل: ${mathEngine.getFactorizationString(factors)}
+🧮 **التحليل:** ${mathEngine.getFactorizationString(factors)}
 ''';
+            }
             break;
             
           case 'taylor_exp':
             final x = double.tryParse(input) ?? 0;
             final value = mathEngine.taylorExp(x);
             result = '''
-📈 متسلسلة تايلور لـ e^$x
-القيمة التقريبية: ${value.toStringAsFixed(6)}
-القيمة الحقيقية: ${mathEngine.taylorExp(x, terms: 20).toStringAsFixed(6)}
-''';
-            break;
-            
-          case 'taylor_sin':
-            final x = double.tryParse(input) ?? 0;
-            final value = mathEngine.taylorSin(x);
-            result = '''
-📈 متسلسلة تايلور لـ sin($x)
-القيمة التقريبية: ${value.toStringAsFixed(6)}
+📈 **متسلسلة تايلور لـ e^$x**
+
+**القيمة التقريبية:** ${value.toStringAsFixed(6)}
+**الدقة (10 حدود):** ${mathEngine.taylorExp(x, terms: 10).toStringAsFixed(6)}
+**الدقة (20 حدود):** ${mathEngine.taylorExp(x, terms: 20).toStringAsFixed(6)}
 ''';
             break;
             
           case 'fibonacci':
             final n = int.tryParse(input) ?? 0;
-            final value = mathEngine.fibonacci(n);
-            result = '''
-🧮 متتالية فيبوناتشي
-F($n) = $value
+            if (n < 0) {
+              result = '❌ الرجاء إدخال عدد غير سالب';
+            } else {
+              final value = mathEngine.fibonacci(n);
+              result = '''
+🧮 **متتالية فيبوناتشي**
+
+**F($n) =** $value
 ''';
+            }
             break;
             
           case 'zeta':
             final s = double.tryParse(input) ?? 2;
-            final value = mathEngine.zeta(s);
-            result = '''
-🎯 دالة زيتا لريمان
-ζ($s) ≈ ${value.toStringAsFixed(6)}
+            if (s <= 1) {
+              result = '❌ دالة زيتا غير معرفة لـ s ≤ 1';
+            } else {
+              final value = mathEngine.zeta(s);
+              result = '''
+🎯 **دالة زيتا لريمان**
+
+**ζ($s) ≈** ${value.toStringAsFixed(6)}
+**الدقة (100 حد):** ${mathEngine.zeta(s, terms: 100).toStringAsFixed(6)}
 ''';
+            }
             break;
         }
         
-        result += '\nتم الحساب بواسطة PPFO v25.0 - د. سعودي محمد';
+        if (!result.contains('❌')) {
+          result += '\n\n---\n*تم الحساب بواسطة PPFO v25.0 - د. سعودي محمد*';
+        }
         
         setState(() {
           _isCalculating = false;
@@ -90,7 +100,7 @@ F($n) = $value
       } catch (e) {
         setState(() {
           _isCalculating = false;
-          _result = '❌ خطأ في الحساب: $e';
+          _result = '❌ **خطأ في الحساب:** $e\n\nالرجاء التحقق من المدخلات والمحاولة مرة أخرى.';
         });
       }
     });
@@ -101,21 +111,9 @@ F($n) = $value
     return Scaffold(
       appBar: AppBar(
         title: const Text('PPFO v25.0 - نظام رياضي متكامل'),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              // التنقل بين الشاشات
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'about',
-                child: Text('عن التطبيق'),
-              ),
-            ],
-          ),
-        ],
+        elevation: 4,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -123,28 +121,34 @@ F($n) = $value
           children: [
             // شعار التطبيق
             Card(
-              elevation: 4,
+              elevation: 2,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
+                child: Row(
                   children: [
-                    const Icon(Icons.calculate, size: 64, color: Colors.blue),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'PPFO v25.0',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
+                    const Icon(Icons.calculate, size: 40, color: Colors.blue),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'PPFO v25.0',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          Text(
+                            'نظام رياضي متكامل - د. سعودي محمد',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Text(
-                      'نظام رياضي متكامل - د. سعودي محمد',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -155,14 +159,18 @@ F($n) = $value
             
             // اختيار العملية
             Card(
+              elevation: 2,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'اختر العملية:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      'اختر العملية الرياضية:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButton<String>(
@@ -178,10 +186,6 @@ F($n) = $value
                           child: Text('📈 متسلسلة تايلور لـ e^x'),
                         ),
                         DropdownMenuItem(
-                          value: 'taylor_sin',
-                          child: Text('📈 متسلسلة تايلور لـ sin(x)'),
-                        ),
-                        DropdownMenuItem(
                           value: 'fibonacci',
                           child: Text('🧮 متتالية فيبوناتشي'),
                         ),
@@ -193,6 +197,8 @@ F($n) = $value
                       onChanged: (value) {
                         setState(() {
                           _selectedOperation = value!;
+                          _numberController.clear();
+                          _result = 'اختر عملية وأدخل عدداً لبدء التحليل الرياضي.';
                         });
                       },
                     ),
@@ -212,9 +218,16 @@ F($n) = $value
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
-                  onPressed: () => _numberController.clear(),
+                  onPressed: () {
+                    _numberController.clear();
+                    setState(() {
+                      _result = 'اختر عملية وأدخل عدداً لبدء التحليل الرياضي.';
+                    });
+                  },
                 ),
+                prefixIcon: const Icon(Icons.numbers),
               ),
+              onSubmitted: (_) => _performCalculation(),
             ),
             
             const SizedBox(height: 16),
@@ -222,12 +235,15 @@ F($n) = $value
             // زر الحساب
             SizedBox(
               width: double.infinity,
+              height: 50,
               child: ElevatedButton(
                 onPressed: _isCalculating ? null : _performCalculation,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[700],
+                  backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: _isCalculating
                     ? const SizedBox(
@@ -240,7 +256,7 @@ F($n) = $value
                       )
                     : Text(
                         _getButtonText(),
-                        style: const TextStyle(fontSize: 18),
+                        style: const TextStyle(fontSize: 16),
                       ),
               ),
             ),
@@ -250,7 +266,7 @@ F($n) = $value
             // عرض النتائج
             Expanded(
               child: Card(
-                elevation: 4,
+                elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SingleChildScrollView(
@@ -275,12 +291,11 @@ F($n) = $value
     switch (_selectedOperation) {
       case 'factorize':
       case 'fibonacci':
-        return 'أدخل عدد صحيح';
+        return 'أدخل عدد صحيح موجب';
       case 'taylor_exp':
-      case 'taylor_sin':
-        return 'أدخل قيمة x';
+        return 'أدخل قيمة x (حقيقية)';
       case 'zeta':
-        return 'أدخل قيمة s';
+        return 'أدخل قيمة s (حقيقية, >1)';
       default:
         return 'أدخل القيمة';
     }
@@ -292,8 +307,6 @@ F($n) = $value
         return '🔍 تحليل العدد';
       case 'taylor_exp':
         return '📈 حساب e^x';
-      case 'taylor_sin':
-        return '📈 حساب sin(x)';
       case 'fibonacci':
         return '🧮 حساب فيبوناتشي';
       case 'zeta':
